@@ -23,7 +23,7 @@ setMethod("nonbimatch", "distancematrix", function(mdm, precision, ...) {
         wt<-wt*shift
         warning(paste("Values were too large!  Multiplied by ", shift, "to ensure all data can be handled"))
     }
-    matched<-.Fortran('mwrap', PACKAGE="nbpMatching", n=as.integer(n), wt=as.integer(wt), nmatch=as.vector(nmatch))$nmatch
+    matched<-.Fortran('mwrap', PACKAGE="nbpMatching", n=as.integer(n), wt=as.integer(wt), nmatch=as.vector(nmatch), prcn=precision)$nmatch
     result<-data.frame(matched)
     matches<-data.frame("X"=numeric(n), "Xrow"=numeric(n), "Y"=numeric(n), "Yrow"=numeric(n), "Distance"=numeric(n))
     halves<-data.frame("Group1"=numeric(n/2), "Group1row"=numeric(n/2), "Group2"=numeric(n/2), "Group2row"=numeric(n/2), "Distance"=numeric(n/2))
