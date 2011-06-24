@@ -51,8 +51,17 @@ setMethod("distancematrix", "character", function(x, ...) {
     if(length(grep("[.]csv$", x, ignore.case=TRUE)) != 1) {
         stop("Function expects a CSV file")
     }
-    x<-as.matrix(read.csv(x, ...))
-    new('distancematrix', x)
+    distancematrix(read.csv(x, ...))
+})
+setMethod("distancematrix", "data.frame", function(x, ...) {
+    distancematrix(as.matrix(x), ...)
+})
+setMethod("distancematrix", "list", function(x, ...) {
+    if("dist" %in% names(x)) {
+        distancematrix(x$dist, ...)
+    } else {
+        stop("x should contain dist element")
+    }
 })
 setMethod("[<-", "distancematrix", function(x, i, j, value) { stop("You may not re-assign elements of a distancematrix") })
 setMethod("[[<-", "distancematrix", function(x, i, j, value) { stop("You may not re-assign elements of a distancematrix") })
