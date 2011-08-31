@@ -1,21 +1,23 @@
 # prepare a data.frame for distance matrix
-# return a list of eight
+# return a list of nine
 # 1) distance matrix
 # 2) covariates used to create distances
 # 3) ignored covariates
 # 4) column weights applied to create distances
 # 5) column names used to prevent matches
-# 6) column indeces, requested to use rank of values
-# 7) missingness weight, applied to missingness indicator columns
-# 8) number of phantoms created
+# 6) row indeces, used to force matches
+# 7) column indeces, requested to use rank of values
+# 8) missingness weight, applied to missingness indicator columns
+# 9) number of phantoms created
 # missing values are imputed, which creates new columns for missingness
 
-setGeneric("gendistance", function(covariate, idcol=NULL, weights=NULL, prevent=NULL, rankcols=NULL, missing.weight=0.1, ndiscard=0, ...) standardGeneric("gendistance"))
-setMethod("gendistance", "data.frame", function(covariate, idcol=NULL, weights=NULL, prevent=NULL, rankcols=NULL, missing.weight=0.1, ndiscard=0, ...) {
+setGeneric("gendistance", function(covariate, idcol=NULL, weights=NULL, prevent=NULL, force=NULL, rankcols=NULL, missing.weight=0.1, ndiscard=0, ...) standardGeneric("gendistance"))
+setMethod("gendistance", "data.frame", function(covariate, idcol=NULL, weights=NULL, prevent=NULL, force=NULL, rankcols=NULL, missing.weight=0.1, ndiscard=0, ...) {
     nr<-nrow(covariate)
     nc<-ncol(covariate)
     myrownames <- character(0)
     mycolnames <- names(covariate)
+    mateIDs <- integer(0)
     bad.data <- NULL
 
     # columns that aren't numeric should be marked bad
@@ -47,6 +49,20 @@ setMethod("gendistance", "data.frame", function(covariate, idcol=NULL, weights=N
         }
     }
     badcol <- badcol[order(badcol)]
+
+    if(!is.null(force)) {
+        force <- as.integer(force)
+        force <- setdiff(na.omit(ifelse(force < 1 | force > nc, NA, force)), badcol)
+        # while this could adapt to a vector of columns, only accept one column
+        if(length(force) == 1L) {
+            badcol <- union(badcol, force)
+            mateIDs <- as.integer(covariate[,force])
+            # ensure ids are valid and not duplicated
+            mateIDs <- ifelse(mateIDs < 1 | mateIDs > length(mateIDs) | duplicated(mateIDs), NA, mateIDs)
+            # ensure ids are reflexive (1->2, 2->1)
+            mateIDs <- ifelse(mateIDs[mateIDs] == seq_along(mateIDs), mateIDs, NA)
+        }
+    }
 
     # remove bad columns
     if(length(badcol) >= 1L) {
@@ -94,7 +110,10 @@ setMethod("gendistance", "data.frame", function(covariate, idcol=NULL, weights=N
     X.cov <- cov.wt(X)
     # use pseudo-inverse if matrix is singular
     Sinv <- tryCatch(solve(X.cov$cov), error=function(e) {})
-    if(is.null(Sinv)) Sinv <- ginv(X.cov$cov)
+    Sinv <- tryCatch(solve(X.cov$cov), error=function(e) { warning(sprintf("%s\nMatrix singular: Euclidean distance used", e[[1]])); NULL })
+    if(is.null(Sinv)) {
+        Sinv <- solve(diag(diag(X.cov$cov)))
+    }
     # prevent negative distances
     for(i in seq_len(nrow(Sinv))) {
         Sinv[i,] <- Sinv[i,]*weights[i]
@@ -129,12 +148,24 @@ setMethod("gendistance", "data.frame", function(covariate, idcol=NULL, weights=N
         }
     }
 
+    # forced matches/mates should receive a distance of zero -- non-matches receive maxval
+    if(length(mateIDs)) {
+        for(i in seq_along(mateIDs)) {
+            j <- mateIDs[i]
+            if(!is.na(j)) {
+                mdists[i,] <- mdists[,i] <- ifelse(seq_along(mdists[i,]) == j, 0, maxval)
+            }
+        }
+    }
+
     # need to add phantom rows/columns of max distance
     GROUPS <- 2
     nphantoms <- ndiscard + ((GROUPS - (nr - ndiscard) %% GROUPS) %% GROUPS)
     if(nphantoms) {
         m2 <- data.frame(matrix(0, nrow=nr+nphantoms, ncol=nr+nphantoms))
         m2[seq_len(nr), seq_len(nr)] <- mdists
+        # distance between phantoms should be maxval
+        m2[seq(from=nr+1, length.out=nphantoms), seq(from=nr+1, length.out=nphantoms)] <- maxval
         mdists <- m2
         names(mdists)[(nr+1):nrow(mdists)] <- sprintf("phantom%s", seq(nr+1, nrow(mdists)))
         row.names(mdists)[(nr+1):nrow(mdists)] <- sprintf("phantom%s", seq(nr+1, nrow(mdists)))
@@ -151,5 +182,5 @@ setMethod("gendistance", "data.frame", function(covariate, idcol=NULL, weights=N
         row.names(mdists)[seq_len(nr)] <- seq_len(nr)
     }
 
-    list(dist=mdists, cov=covariate, ignored=bad.data, weights=weights, prevent=prevent, rankcols=rankcols, missing.weight=missing.weight, ndiscard=nphantoms)
+    list(dist=mdists, cov=covariate, ignored=bad.data, weights=weights, prevent=prevent, mates=mateIDs, rankcols=rankcols, missing.weight=missing.weight, ndiscard=nphantoms)
 })

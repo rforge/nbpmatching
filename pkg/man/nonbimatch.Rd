@@ -1,5 +1,5 @@
 \name{nonbimatch}
-\Rdversion{1.2}
+\Rdversion{1.3}
 \alias{nonbimatch}
 \alias{nonbimatch,distancematrix-method}
 \title{
@@ -9,12 +9,15 @@ Nonbipartite Matching
 The nonbinmatch function creates the set of pairwise matches that minimizes the sum of distances between the pairs.  
 }
 \usage{
-nonbimatch(mdm, precision = 6, ...)
+nonbimatch(mdm, threshold = NA, precision = 6, ...)
 }
 
 \arguments{
   \item{mdm}{
 A distancematrix object.  See the distancematrix function.
+}
+  \item{threshold}{
+An integer value, indicating the distance needed to create chameleon matches.
 }
   \item{precision}{                                                                                                                        
 The largest value in the matrix will have at most this many digits.  The default value is six.                                             

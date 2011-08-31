@@ -1,5 +1,5 @@
 \name{nbpMatching-package}
-\Rdversion{1.2}
+\Rdversion{1.3}
 \alias{nbpMatching-package}
 \alias{nbpMatching}
 \docType{package}
@@ -21,12 +21,22 @@ Lu, Greevy, Xu, and Beck. Optimal Nonbipartite Matching and its Statistical Appl
 }
 
 \examples{
-plainmatrix<-as.matrix(dist(sample(1:25, 8, replace=TRUE)))
-diag(plainmatrix) <- 99999  # setting diagonal to an infinite distance for
-                            # pedagogical reasons (the diagonal may be left
-                            # as zero)
-mdm<-distancematrix(plainmatrix)
-res<-nonbimatch(mdm)
+# create a covariate matrix
+df <- data.frame(id=LETTERS[1:25], val1=rnorm(25), val2=rnorm(25))
+# create distances
+df.dist <- gendistance(df, idcol=1)
+# create distancematrix object
+df.mdm <- distancematrix(df.dist)
+# create matches
+df.match <- nonbimatch(df.mdm)
+# review quality of matches
+df.qom <- qom(df.dist$cov, df.match$matches)
+
+# some helper functions are available
+# runner -- start with the covariate, run through the entire process
+df.1 <- runner(df, idcol=1)
+# full.qom -- start with the covariate, generate a full quality of match report
+df.2 <- full.qom(df)
 
 \dontrun{
 try a large matrix

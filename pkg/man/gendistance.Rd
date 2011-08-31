@@ -1,5 +1,5 @@
 \name{gendistance}
-\Rdversion{1.2}
+\Rdversion{1.3}
 \alias{gendistance}
 \alias{gendistance,data.frame-method}
 \title{
@@ -9,7 +9,7 @@ Generate a Distance Matrix
 The gendistance function creates a distance matrix from a covariates matrix.
 }
 \usage{
-gendistance(covariate, idcol=NULL, weights=NULL, prevent=NULL, rankcols=NULL, missing.weight=0.1, ndiscard=0, ...)
+gendistance(covariate, idcol=NULL, weights=NULL, prevent=NULL, force=NULL, rankcols=NULL, missing.weight=0.1, ndiscard=0, ...)
 }
 
 \arguments{
@@ -24,6 +24,9 @@ A numeric vector, the length should match the number of columns.  This value det
 }
   \item{prevent}{
 An integer vector, providing the index of columns that should be used to prevent matches.  When generating the distance matrix, elements that match on these columns are given a maximum distance.
+}
+  \item{force}{
+A integer, providing the index of the column contain information used to force pairs to match.
 }
   \item{rankcols}{
 An integer vector, providing the index of columns that should have the rank function applied to them before generating the distance matrix.
@@ -50,6 +53,7 @@ a list object with several elements
     \item{ignored }{ignored columns from original covariate matrix}
     \item{weights }{weights applied to each column in covariate matrix}
     \item{prevent }{columns used to prevent matches}
+    \item{mates }{index of rows that should be forced to match}
     \item{rankcols }{index of columns that should use rank}
     \item{missing.weight }{weight to apply to missingness indicator columns}
     \item{ndiscard }{number of elements that will match phantoms}
