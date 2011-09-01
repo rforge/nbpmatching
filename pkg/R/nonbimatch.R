@@ -93,7 +93,7 @@ setMethod("runner", "data.frame", function(covariate, seed=101, ..., mate.random
             options <- options[-match(mates, options)]
         }
         result <- data.frame(match=result)
-        if(restoreRandom) set.seed(save.seed)
+        if(restoreRandom) .Random.seed <<- save.seed
         else rm(.Random.seed, inherits=TRUE)
 
         ids <- rownames(step2)

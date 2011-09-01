@@ -20,7 +20,7 @@ setMethod("assign.grp", "data.frame", function(matches, seed=68, ...) {
     if(!is.numeric(seed)) seed <- 68
     set.seed(seed)
     choices <- sample(c(TRUE, FALSE), nrow(pairs), replace=TRUE)
-    if(restoreRandom) set.seed(save.seed)
+    if(restoreRandom) .Random.seed <<- save.seed
     else rm(.Random.seed, inherits=TRUE)
 
     for(i in seq_len(nrow(pairs))) {

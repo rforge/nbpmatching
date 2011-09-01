@@ -29,7 +29,7 @@ setMethod("fill.missing", "data.frame", function(x, seed=101, ...) {
             x[names(imputed.vals), cname] <<- imputed.vals
         }
     }))
-    if(restoreRandom) set.seed(save.seed) #.Random.seed <<- save.seed
+    if(restoreRandom) .Random.seed <<- save.seed
     else rm(.Random.seed, inherits=TRUE)
     cbind(x, missingness)
 })

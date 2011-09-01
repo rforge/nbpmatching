@@ -28,7 +28,7 @@ setMethod("qom", "data.frame", function(covariate, matches, iterations=10000, pr
     if(!is.numeric(seed)) seed <- 101
     set.seed(seed)
     choices <- matrix(sample(c(-1,1), npairs*iterations, replace=TRUE), ncol=iterations)
-    if(restoreRandom) set.seed(save.seed)
+    if(restoreRandom) .Random.seed <<- save.seed
     else rm(.Random.seed, inherits=TRUE)
 
     group.one <- sapply(covariate[pairs[,1],], FUN=function(x) {
