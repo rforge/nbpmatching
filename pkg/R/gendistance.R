@@ -124,6 +124,8 @@ setMethod("gendistance", "data.frame", function(covariate, idcol=NULL, weights=N
     mdistmaker <- function(row1, row2) { t(X[row1,]-X[row2,]) %*% Sinv %*% (X[row1,]-X[row2,]) }
     # Create the distance matrix mdists
     mdists <- sapply(seq_len(nr), FUN=function(x) mapply(mdistmaker, x, seq_len(nr)))
+    # take the square root
+    mdists <- sqrt(mdists)
 
     # pick a big value for points that shouldn't match - like the diagonal
     numdigits<-floor(log10(max(mdists))) + 1
