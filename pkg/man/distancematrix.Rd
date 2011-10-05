@@ -1,5 +1,5 @@
 \name{distancematrix}
-\Rdversion{1.3.1}
+\Rdversion{1.3.2}
 \alias{distancematrix}
 \alias{distancematrix-class}
 \alias{distancematrix,matrix-method}

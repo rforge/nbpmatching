@@ -409,10 +409,10 @@ C
       SUBROUTINE OGRAPH(N,ZFW,EPS,INDEX,NBL,CC,SM,TMA,TMB,NMATCH,MEM,
      1			BASIS,KA,KB,DPLUS,DMINUS,Y1,Y2)
 C - - -	- - - -	- - - -	- - - -	- - - -	- - - -	- - - -	- - - -	- - -
-      INTEGER	 INDEX(100),CC(100),SM(100),TMA(100),TMB(100),N,ZFW,
-     F		 NMATCH(100),MEM(100),BASIS(100),KA(100),KB(100)
-      INTEGER  NBL(100)
-      DOUBLE PRECISION DPLUS(100),DMINUS(100),Y1(100),Y2(100),C0,D,DBEST,YB,
+      INTEGER	 INDEX(1),CC(1),SM(1),TMA(1),TMB(1),N,ZFW,
+     F		 NMATCH(1),MEM(1),BASIS(1),KA(1),KB(1)
+      INTEGER  NBL(1)
+      DOUBLE PRECISION DPLUS(1),DMINUS(1),Y1(1),Y2(1),C0,D,DBEST,YB,
      F		       Y1B,DFLOAT
 C - - -	- - - -	- - - -	- - - -	- - - -	- - - -	- - - -	- - - -	- - -
 C *** GENERATION OF THE	ORIGINAL GRAPH BY EXPANSION OF ALL
