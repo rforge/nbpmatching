@@ -67,8 +67,9 @@ setMethod("gendistance", "data.frame", function(covariate, idcol=NULL, weights=N
     # remove bad columns
     if(length(badcol) >= 1L) {
         weights <- weights[-badcol]
-        bad.data <- covariate[,badcol]
-        covariate <- covariate[,-badcol]
+        # selecting one column from a data.frame creates a vector; using drop keeps a data.frame
+        bad.data <- covariate[,badcol, drop=FALSE]
+        covariate <- covariate[,-badcol, drop=FALSE]
     }
     # validate rankcols
     if(!is.null(rankcols)) {
@@ -109,7 +110,6 @@ setMethod("gendistance", "data.frame", function(covariate, idcol=NULL, weights=N
     # Create the covariance matrix and invert it
     X.cov <- cov.wt(X)
     # use pseudo-inverse if matrix is singular
-    Sinv <- tryCatch(solve(X.cov$cov), error=function(e) {})
     Sinv <- tryCatch(solve(X.cov$cov), error=function(e) { warning(sprintf("%s\nMatrix singular: Euclidean distance used", e[[1]])); NULL })
     if(is.null(Sinv)) {
         Sinv <- solve(diag(diag(X.cov$cov)))

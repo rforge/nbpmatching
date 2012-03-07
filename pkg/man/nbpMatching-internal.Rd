@@ -1,6 +1,5 @@
 \name{nbpMatching-internal}
 \title{Internal nbpMatching objects}
-\alias{.First.lib}
 \alias{.requireCachedGenerics}
 \alias{initialize,distancematrix-method}
 \alias{[<-,distancematrix-method}

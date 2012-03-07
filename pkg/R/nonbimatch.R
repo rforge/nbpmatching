@@ -36,7 +36,7 @@ setMethod("nonbimatch", "distancematrix", function(mdm, threshold=NA, precision,
         wt <- wt*shift
         print(sprintf("Note: Distances scaled by %s to ensure all data can be handled", shift))
     }
-    match <- .Fortran('mwrap', PACKAGE="nbpMatching", n=as.integer(n), wt=as.integer(wt), nmatch=as.vector(nmatch), prcn=precision)$nmatch
+    match <- .Fortran(mwrap, n=as.integer(n), wt=as.integer(wt), nmatch=as.vector(nmatch), prcn=precision)$nmatch
 
     # remove chameleon to chameleon matches
     if(!is.na(threshold)) {

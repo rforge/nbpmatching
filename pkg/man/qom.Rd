@@ -1,5 +1,5 @@
 \name{qom}
-\Rdversion{1.3.2}
+\Rdversion{1.3.3}
 \alias{qom}
 \alias{qom,data.frame-method}
 \title{
