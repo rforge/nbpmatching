@@ -120,10 +120,11 @@ setMethod("gendistance", "data.frame", function(covariate, idcol=NULL, weights=N
         Sinv[,i] <- Sinv[,i]*weights[i]
     }
 
-    # Define a function to create the distance matrix using Sinv and X
-    mdistmaker <- function(row1, row2) { t(X[row1,]-X[row2,]) %*% Sinv %*% (X[row1,]-X[row2,]) }
     # Create the distance matrix mdists
-    mdists <- sapply(seq_len(nr), FUN=function(x) mapply(mdistmaker, x, seq_len(nr)))
+    mdists <- sapply(seq_len(nr), FUN=function(x) { y <- X - X[rep(x, nr),]; rowSums(y %*% Sinv * y) })
+    # Define a function to create the distance matrix using Sinv and X, previously done this way
+    # mdistmaker <- function(row1, row2) { t(X[row1,]-X[row2,]) %*% Sinv %*% (X[row1,]-X[row2,]) }
+    # mdists <- sapply(seq_len(nr), FUN=function(x) mapply(mdistmaker, x, seq_len(nr)))
     # take the square root
     mdists <- sqrt(mdists)
 
