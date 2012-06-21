@@ -3,6 +3,12 @@
 
 setGeneric("assign.grp", function(matches, seed=68, ...) standardGeneric("assign.grp"))
 setMethod("assign.grp", "data.frame", function(matches, seed=68, ...) {
+    if(exists(".Random.seed", envir = .GlobalEnv)) {
+        save.seed <- get(".Random.seed", envir= .GlobalEnv)
+        on.exit(assign(".Random.seed", save.seed, envir = .GlobalEnv))
+    } else {
+        on.exit(rm(".Random.seed", envir = .GlobalEnv))
+    }
     n <- nrow(matches)
     if(n%%2 == 1) {
         stop("There must be an even number of elements")
@@ -12,16 +18,9 @@ setMethod("assign.grp", "data.frame", function(matches, seed=68, ...) {
     }
     matches <- cbind(matches, treatment.grp=NA)
     pairs <- matches[matches[,2] < matches[,4], c(2,4)]
-    restoreRandom <- FALSE
-    if(exists(".Random.seed")) {
-        save.seed <- .Random.seed
-        restoreRandom <- TRUE
-    }
     if(!is.numeric(seed)) seed <- 68
     set.seed(seed)
     choices <- sample(c(TRUE, FALSE), nrow(pairs), replace=TRUE)
-    if(restoreRandom) .Random.seed <<- save.seed
-    else rm(.Random.seed, inherits=TRUE)
 
     for(i in seq_len(nrow(pairs))) {
         matches$treatment.grp[pairs[i, 1]] <- ifelse(choices[i], "A", "B")

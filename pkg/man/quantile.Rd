@@ -1,5 +1,5 @@
 \name{quantile}
-\Rdversion{1.3.4}
+\Rdversion{1.3.5}
 \alias{quantile}
 \alias{quantile,distancematrix-method}
 \title{

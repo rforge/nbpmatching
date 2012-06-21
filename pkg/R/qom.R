@@ -3,6 +3,12 @@
 
 setGeneric("qom", function(covariate, matches, iterations=10000, probs=NA, seed=101, all.vals=FALSE, ...) standardGeneric("qom"))
 setMethod("qom", "data.frame", function(covariate, matches, iterations=10000, probs=NA, seed=101, all.vals=FALSE, ...) {
+    if(exists(".Random.seed", envir = .GlobalEnv)) {
+        save.seed <- get(".Random.seed", envir= .GlobalEnv)
+        on.exit(assign(".Random.seed", save.seed, envir = .GlobalEnv))
+    } else {
+        on.exit(rm(".Random.seed", envir = .GlobalEnv))
+    }
     n <- nrow(matches)
     if(n%%2 == 1) {
         stop("There must be an even number of elements")
@@ -20,16 +26,9 @@ setMethod("qom", "data.frame", function(covariate, matches, iterations=10000, pr
     if(length(ignorecols) > 0) covariate <- covariate[, -ignorecols]
 
     if(is.na(iterations) || !is.numeric(iterations) || iterations < 2) iterations <- 10000
-    restoreRandom <- FALSE
-    if(exists(".Random.seed")) {
-        save.seed <- .Random.seed
-        restoreRandom <- TRUE
-    }
     if(!is.numeric(seed)) seed <- 101
     set.seed(seed)
     choices <- matrix(sample(c(-1,1), npairs*iterations, replace=TRUE), ncol=iterations)
-    if(restoreRandom) .Random.seed <<- save.seed
-    else rm(.Random.seed, inherits=TRUE)
 
     group.one <- sapply(covariate[pairs[,1],], FUN=function(x) {
       colMeans(choices * x, na.rm=TRUE)

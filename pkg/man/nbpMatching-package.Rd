@@ -1,5 +1,5 @@
 \name{nbpMatching-package}
-\Rdversion{1.3.4}
+\Rdversion{1.3.5}
 \alias{nbpMatching-package}
 \alias{nbpMatching}
 \docType{package}

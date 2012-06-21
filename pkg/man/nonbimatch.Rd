@@ -1,5 +1,5 @@
 \name{nonbimatch}
-\Rdversion{1.3.4}
+\Rdversion{1.3.5}
 \alias{nonbimatch}
 \alias{nonbimatch,distancematrix-method}
 \title{

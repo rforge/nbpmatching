@@ -1,5 +1,5 @@
 \name{gendistance}
-\Rdversion{1.3.4}
+\Rdversion{1.3.5}
 \alias{gendistance}
 \alias{gendistance,data.frame-method}
 \title{
