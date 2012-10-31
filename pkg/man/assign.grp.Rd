@@ -1,5 +1,5 @@
 \name{assign.grp}
-\Rdversion{1.3.5}
+\Rdversion{1.3.6}
 \alias{assign.grp}
 \alias{assign.grp,data.frame-method}
 \title{

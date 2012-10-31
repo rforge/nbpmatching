@@ -1,5 +1,5 @@
 \name{nbpMatching-package}
-\Rdversion{1.3.5}
+\Rdversion{1.3.6}
 \alias{nbpMatching-package}
 \alias{nbpMatching}
 \docType{package}
@@ -8,6 +8,8 @@ Nonbipartite Matching
 }
 \description{
 This package will take an input distance matrix and generate the set of pairwise matches that minimizes the sum of distances between the pairs by running nonbimatch.
+
+The most current documentation is available at \url{http://biostat.mc.vanderbilt.edu/wiki/Main/MatchedRandomization}.
 }
 
 \author{
@@ -17,7 +19,9 @@ Maintainer: Cole Beck \email{cole.beck@vanderbilt.edu}
 }
 
 \references{
-Lu, Greevy, Xu, and Beck. Optimal Nonbipartite Matching and its Statistical Applications. (under review)
+Lu B, Greevy R, Xu X, Beck C. Optimal Nonbipartite Matching and its Statistical Applications. The American Statistician. Vol. 65, no. 1. : 21-30. 2011.
+
+Greevy RA Jr, Grijalva CG, Roumie CL, Beck C, Hung AM, Murff HJ, Liu X, Griffin MR. Reweighted Mahalanobis distance matching for cluster-randomized trials with missing data. Pharmacoepidemiol Drug Saf. 2012 May;21 Suppl 2:148-54. doi: 10.1002/pds.3260.
 }
 
 \examples{
