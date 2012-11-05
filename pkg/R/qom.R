@@ -1,8 +1,8 @@
 # run quality of match diagnostics
 # return data.frame with QoM information
 
-setGeneric("qom", function(covariate, matches, iterations=10000, probs=NA, seed=101, all.vals=FALSE, ...) standardGeneric("qom"))
-setMethod("qom", "data.frame", function(covariate, matches, iterations=10000, probs=NA, seed=101, all.vals=FALSE, ...) {
+setGeneric("qom", function(covariate, matches, iterations=10000, probs=NA, use.se=FALSE, all.vals=FALSE, seed=101, ...) standardGeneric("qom"))
+setMethod("qom", "data.frame", function(covariate, matches, iterations=10000, probs=NA, use.se=FALSE, all.vals=FALSE, seed=101, ...) {
     if(exists(".Random.seed", envir = .GlobalEnv)) {
         save.seed <- get(".Random.seed", envir= .GlobalEnv)
         on.exit(assign(".Random.seed", save.seed, envir = .GlobalEnv))
@@ -24,21 +24,84 @@ setMethod("qom", "data.frame", function(covariate, matches, iterations=10000, pr
     npairs <- nrow(pairs)
     ignorecols <- which(sapply(covariate, FUN=function(x) { length(setdiff(x, suppressWarnings(as.numeric(x)))) > 0 }))
     if(length(ignorecols) > 0) covariate <- covariate[, -ignorecols]
-
-    if(is.na(iterations) || !is.numeric(iterations) || iterations < 2) iterations <- 10000
-    if(!is.numeric(seed)) seed <- 101
-    set.seed(seed)
-    choices <- matrix(sample(c(-1,1), npairs*iterations, replace=TRUE), ncol=iterations)
-
-    group.one <- sapply(covariate[pairs[,1],], FUN=function(x) {
-      colMeans(choices * x, na.rm=TRUE)
-    })
-    group.two <- sapply(covariate[pairs[,2],], FUN=function(x) {
-      colMeans(choices * x, na.rm=TRUE)
-    })
-    pairdiff.sums.mat <- abs(group.one - group.two)
     if(is.na(probs) || !is.numeric(probs)) probs <- c(0,25,50,75,90,95,100)/100
-    pairsumm <- round(t(apply(pairdiff.sums.mat, MARGIN=2, FUN=function(x) { quantile(x, probs=probs) })), 4)
-    row.names(pairsumm) <- names(covariate)
-    pairsumm
+    probs <- sort(probs[0 <= probs & probs <= 1])
+    if(length(probs) == 0) return(numeric(0))
+
+    worst <- NULL
+    pair.sd <- pair.se <- NULL
+    # check for ~100% percentile, and remove from probs
+    if(1 - probs[length(probs)] < 0.000001) {
+        probs <- probs[-length(probs)]
+        # 100th percentile is special case, force worst group by placing min value in group 1
+        worst <- matrix(colMeans(abs(covariate[pairs[,1],]-covariate[pairs[,2],]), na.rm=TRUE))
+        if(all.vals) {
+            good.indeces <- which(pairs[,2] <= nrow(covariate))
+            # find values that matched phantoms
+            others <- covariate[pairs[-good.indeces,1],]
+            md <- function(x,y) abs(mean(x, na.rm=TRUE)-mean(y, na.rm=TRUE))
+            group.means <- matrix(rowMeans(sapply(apply(pairs[good.indeces,], MARGIN=1, FUN=function(i) covariate[unlist(i),]), FUN=function(j) apply(j, MARGIN=2, sort))), nrow=2)
+            for(i in seq(ncol(others))) {
+                g1 <- c(rep(group.means[1,i], length(good.indeces)), sort(others[,i]))
+                g2 <- c(rep(group.means[2,i], length(good.indeces)), rep(NA, nrow(others)))
+                mydiff <- md(g1, g2)
+                for(j in seq(length(g1), by=-1, length.out=nrow(others))) {
+                    g2[j] <- g1[j]
+                    g1[j] <- NA
+                    newdiff <- md(g1, g2)
+                    if(mydiff >= newdiff) {
+                        break
+                    } else {
+                        mydiff <- newdiff
+                    }
+                }
+                worst[i,1] <- mydiff
+            }
+        }
+        dimnames(worst) <- list(names(covariate), "100%")
+    }
+
+    if(length(probs)) {
+        if(is.na(iterations) || !is.numeric(iterations) || iterations < 2) iterations <- 10000
+        if(!is.numeric(seed)) seed <- 101
+        set.seed(seed)
+        choices <- matrix(sample(c(-1,1), npairs*iterations, replace=TRUE), ncol=iterations)
+
+        if(all.vals == TRUE) {
+            # use alternate, slower method when all values (including NAs) are present
+            sp <- seq(n)
+            pairdiff.sums.mat <- t(apply(choices, MARGIN=2, FUN=function(x) {
+                g1 <- ifelse(x < 0, pairs[,1], pairs[,2])
+                g2 <- setdiff(sp, g1)
+                abs(colMeans(covariate[g1,], na.rm=TRUE) - colMeans(covariate[g2,], na.rm=TRUE))
+            }))
+        } else {
+            group.one <- sapply(covariate[pairs[,1],], FUN=function(x) {
+              colMeans(choices * x, na.rm=TRUE)
+            })
+            group.two <- sapply(covariate[pairs[,2],], FUN=function(x) {
+              colMeans(choices * x, na.rm=TRUE)
+            })
+            pairdiff.sums.mat <- abs(group.one - group.two)
+        }
+        if(use.se == TRUE) {
+            se.parts <- round(t(apply(pairdiff.sums.mat, MARGIN=2, FUN=function(x) { tmp<-hdquantile(x, probs=probs, se=TRUE); c(tmp, attr(tmp, "se")) })), 4)
+            pairsumm <- se.parts[,seq_along(probs)]
+            pair.se <- se.parts[,seq(length(probs)+1, length.out=length(probs))]
+            # change the format of the colnames to be like "quantile"
+            cnames <- sprintf("%.0f%%", as.numeric(colnames(pairsumm))*100)
+            colnames(pairsumm) <- cnames
+            colnames(pair.se) <- cnames
+        } else {
+            # it's cheap to add probs=0; do so and remove first row to ensure matrix result
+            pairsumm <- round(t(apply(pairdiff.sums.mat, MARGIN=2, quantile, probs=c(0,probs))), 4)[,-1, drop=FALSE]
+        }
+        if(!is.null(worst)) {
+            pairsumm <- cbind(pairsumm, worst)
+        }
+    } else {
+        # only return the 100th percentile
+        pairsumm <- worst
+    }
+    list(q=pairsumm, se=pair.se)
 })

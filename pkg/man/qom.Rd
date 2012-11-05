@@ -1,5 +1,5 @@
 \name{qom}
-\Rdversion{1.3.6}
+\Rdversion{1.4.0}
 \alias{qom}
 \alias{qom,data.frame-method}
 \title{
@@ -9,7 +9,7 @@ Quality of Match
 Quality of matches show how well matched pairs differ.  For each variable the average distance is generated.  Each item in a pair is assigned a group and after several iterations the quantile of these average distances is returned.
 }
 \usage{
-qom(covariate, matches, iterations=10000, probs=NA, seed=101, all.vals=FALSE, ...)
+qom(covariate, matches, iterations=10000, probs=NA, use.se=FALSE, all.vals=FALSE, seed=101, ...)
 }
 
 \arguments{
@@ -25,11 +25,14 @@ An integer.  Number of iterations to run, defaults to 10,000.
   \item{probs}{
 A numeric vector.  Probabilities to pass to the quantile function.
 }
-  \item{seed}{
-Seed provided for random-number generation.  Default value of 101.
+  \item{use.se}{
+A logical value.  Determines if the standard error should be computed.  Default value of FALSE.
 }
   \item{all.vals}{
 A logical value.  Determines if false matches should be included in comparison.  Default value of FALSE.
+}
+  \item{seed}{
+Seed provided for random-number generation.  Default value of 101.
 }
   \item{\dots}{
 Additional arguments, not used at the moment.
@@ -38,10 +41,13 @@ Additional arguments, not used at the moment.
 
 \details{
 This fuction is useful for determining the effectiveness of your weights (when generating a distance matrix).  Weighting a variable more will lower the average distance, but it could penalize the distance of the other variables.
+Calculating the standard error requires calling \sQuote{hdquantile} from \pkg{Hmisc}.  The quantiles may be slighly different when using \sQuote{hdquantile}.
 }
 
 \value{
-data.frame with quality of match information
+a list object containing elements with quality of match information
+    \item{q }{data.frame with quantiles for each covariate}
+    \item{se }{data.frame with standard error for each covariate}
 }
 
 \author{

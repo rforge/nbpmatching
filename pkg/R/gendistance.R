@@ -11,11 +11,11 @@
 # 9) number of phantoms created
 # missing values are imputed, which creates new columns for missingness
 
-setGeneric("gendistance", function(covariate, idcol=NULL, weights=NULL, prevent=NULL, force=NULL, rankcols=NULL, missing.weight=0.1, ndiscard=0, ...) standardGeneric("gendistance"))
-setMethod("gendistance", "data.frame", function(covariate, idcol=NULL, weights=NULL, prevent=NULL, force=NULL, rankcols=NULL, missing.weight=0.1, ndiscard=0, ...) {
+setGeneric("gendistance", function(covariate, idcol=NULL, weights=NULL, prevent=NULL, force=NULL, rankcols=NULL, missing.weight=0.1, ndiscard=0, singular.method='solve', ...) standardGeneric("gendistance"))
+setMethod("gendistance", "data.frame", function(covariate, idcol=NULL, weights=NULL, prevent=NULL, force=NULL, rankcols=NULL, missing.weight=0.1, ndiscard=0, singular.method='solve', ...) {
     nr<-nrow(covariate)
     nc<-ncol(covariate)
-    myrownames <- character(0)
+    myrownames <- seq_len(nr)
     mycolnames <- names(covariate)
     mateIDs <- integer(0)
     bad.data <- NULL
@@ -81,7 +81,7 @@ setMethod("gendistance", "data.frame", function(covariate, idcol=NULL, weights=N
         }
     }
     # validate missing.weight and ndiscard
-    if(!is.numeric(missing.weight) || missing.weight < 0) missing.weight <- 0.1
+    if(!is.numeric(missing.weight) || (length(missing.weight) == 1 && missing.weight < 0)) missing.weight <- 0.1
     if(!is.numeric(ndiscard) || ndiscard < 0 || (nr - ndiscard) < 2) ndiscard <- 0
 
     # impute any missing values
@@ -91,7 +91,16 @@ setMethod("gendistance", "data.frame", function(covariate, idcol=NULL, weights=N
         new.colnames <- names(covariate)
         # calculate new weights
         weight.lookups <- sapply(sub(".missing", "", new.colnames[(length(orig.colnames)+1):length(new.colnames)]), FUN=function(y) { which(orig.colnames == y)  })
-        weights <- append(weights, weights[weight.lookups]*missing.weight)
+        if(length(missing.weight) > 1L) {
+            if(length(missing.weight) != length(weight.lookups)) {
+                missing.weight <- rep(missing.weight, length.out=length(weight.lookups))
+                warning('the number of elements in missing.weight does not equal the number of variables with missingness - weights will be recycled as necessary')
+            }
+            # weight lookups are ignored when vector of missing.weights is provided
+            weights <- append(weights, missing.weight)
+        } else {
+            weights <- append(weights, weights[weight.lookups]*missing.weight)
+        }
         if(length(rankcols) >= 1L) {
             rankcols <- append(rankcols, (length(orig.colnames)+1):length(new.colnames))
         } else {
@@ -110,9 +119,20 @@ setMethod("gendistance", "data.frame", function(covariate, idcol=NULL, weights=N
     # Create the covariance matrix and invert it
     X.cov <- cov.wt(X)
     # use pseudo-inverse if matrix is singular
-    Sinv <- tryCatch(solve(X.cov$cov), error=function(e) { warning(sprintf("%s\nMatrix singular: Euclidean distance used", e[[1]])); NULL })
+    Sinv <- tryCatch(solve(X.cov$cov), error=function(e) { warning(e[[1]]); NULL })
     if(is.null(Sinv)) {
-        Sinv <- solve(diag(diag(X.cov$cov)))
+        # options for singular.method: [solve, ginv]
+        if(is.null(singular.method) || !is.character(singular.method)) singular.method <- 'solve'
+        if(singular.method=='ginv') {
+            Sinv <- tryCatch(ginv(X.cov$cov), error=function(e) { warning(e[[1]]); NULL})
+            if(!is.null(Sinv)) {
+                warning("The covariance matrix is not invertible. The Moore-Penrose pseudoinverse (generalized inverse) was used to compute distances.")
+            }
+        }
+        if(is.null(Sinv)) {
+            Sinv <- solve(diag(diag(X.cov$cov)))
+            warning("The covariance matrix is not invertible and/or the option for Euclidean distances was selected. Standardized Euclidean distances were used to compute distances.")
+        }
     }
     # prevent negative distances
     for(i in seq_len(nrow(Sinv))) {
@@ -134,6 +154,8 @@ setMethod("gendistance", "data.frame", function(covariate, idcol=NULL, weights=N
     maxval<-2*10^8
     mdists<-floor(mdists*shift)
     diag(mdists) <- maxval
+    # add back row names
+    dimnames(mdists) <- list(myrownames, myrownames)
 
     # penalize "prevent" columns with matching values by setting distance to maxval
     # prevent is a vector of column names found in bad.data
@@ -164,26 +186,11 @@ setMethod("gendistance", "data.frame", function(covariate, idcol=NULL, weights=N
     # need to add phantom rows/columns of max distance
     GROUPS <- 2
     nphantoms <- ndiscard + ((GROUPS - (nr - ndiscard) %% GROUPS) %% GROUPS)
-    if(nphantoms) {
-        m2 <- data.frame(matrix(0, nrow=nr+nphantoms, ncol=nr+nphantoms))
-        m2[seq_len(nr), seq_len(nr)] <- mdists
-        # distance between phantoms should be maxval
-        m2[seq(from=nr+1, length.out=nphantoms), seq(from=nr+1, length.out=nphantoms)] <- maxval
-        mdists <- m2
-        names(mdists)[(nr+1):nrow(mdists)] <- sprintf("phantom%s", seq(nr+1, nrow(mdists)))
-        row.names(mdists)[(nr+1):nrow(mdists)] <- sprintf("phantom%s", seq(nr+1, nrow(mdists)))
-    } else {
-        # convert matrix to data frame
-        mdists <- data.frame(mdists)
+    if(nphantoms > 0L) {
+        mdists <- make.phantoms(mdists, nphantoms)
     }
-    # add back row names
-    if(length(myrownames) > 0L) {
-        names(mdists)[seq_len(nr)] <- myrownames
-        row.names(mdists)[seq_len(nr)] <- myrownames
-    } else {
-        names(mdists)[seq_len(nr)] <- seq_len(nr)
-        row.names(mdists)[seq_len(nr)] <- seq_len(nr)
-    }
+    # convert matrix to data frame
+    mdists <- as.data.frame(mdists)
 
     list(dist=mdists, cov=covariate, ignored=bad.data, weights=weights, prevent=prevent, mates=mateIDs, rankcols=rankcols, missing.weight=missing.weight, ndiscard=nphantoms)
 })

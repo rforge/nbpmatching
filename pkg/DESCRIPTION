@@ -1,7 +1,7 @@
 Package: nbpMatching
 Type: Package
 Title: functions for non-bipartite optimal matching
-Version: 1.3.6
+Version: 1.4.0
 Date: 2012-10-31
 Author: Bo Lu, Robert Greevy, Cole Beck
 Maintainer: Cole Beck <cole.beck@vanderbilt.edu>
@@ -9,3 +9,4 @@ Description: solves Mahalanobis distance matrices
 License: GPL (>= 2)
 LazyLoad: yes
 Depends: methods, Hmisc
+Imports: MASS

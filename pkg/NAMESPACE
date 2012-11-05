@@ -1,5 +1,6 @@
 useDynLib(nbpMatching, mwrap)
 import(methods)
-importFrom(Hmisc, transcan)
+importFrom(Hmisc, transcan, hdquantile)
+importFrom(MASS, ginv)
 exportClasses(distancematrix)
-exportMethods(assign.grp, distancematrix, fill.missing, gendistance, nonbimatch, runner, full.qom, qom, quantile, "[<-", "[[<-")
+exportMethods(assign.grp, distancematrix, fill.missing, gendistance, make.phantoms, nonbimatch, runner, full.qom, qom, quantile, "[<-", "[[<-", get.sets, scalar.dist)

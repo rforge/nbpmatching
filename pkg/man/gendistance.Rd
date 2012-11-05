@@ -1,5 +1,5 @@
 \name{gendistance}
-\Rdversion{1.3.6}
+\Rdversion{1.4.0}
 \alias{gendistance}
 \alias{gendistance,data.frame-method}
 \title{
@@ -9,7 +9,7 @@ Generate a Distance Matrix
 The gendistance function creates a distance matrix from a covariates matrix.
 }
 \usage{
-gendistance(covariate, idcol=NULL, weights=NULL, prevent=NULL, force=NULL, rankcols=NULL, missing.weight=0.1, ndiscard=0, ...)
+gendistance(covariate, idcol=NULL, weights=NULL, prevent=NULL, force=NULL, rankcols=NULL, missing.weight=0.1, ndiscard=0, singular.method='solve', ...)
 }
 
 \arguments{
@@ -32,10 +32,13 @@ A integer, providing the index of the column contain information used to force p
 An integer vector, providing the index of columns that should have the rank function applied to them before generating the distance matrix.
 }
   \item{missing.weight}{
-A numeric value, used to generate the weight of missingness indicator columns.  Missingness indicator columns are created if there is missing data within the data set.  Defaults to 0.1.
+A numeric value, or vector, used to generate the weight of missingness indicator columns.  Missingness indicator columns are created if there is missing data within the data set.  Defaults to 0.1.  If a single value is supplied, weights are generating by multiplying this by the original columns' weight.  If a vector is supplied, it's length should match the number of columns with missing data, and the weight is used as is.
 }
   \item{ndiscard}{
 An integer, providing the number of elements that should be allowed to match phantom values.  The default value is 0.
+}
+  \item{singular.method}{
+A character string, indicating the function to use when encountering a singular matrix.  By default, \sQuote{solve} is called.  The alternative is to call \sQuote{ginv} from the \pkg{MASS} package.
 }
   \item{\dots}{
 Additional arguments, not used at this time.
@@ -68,7 +71,14 @@ Cole Beck
 }
 
 \examples{
+set.seed(1)
 df <- data.frame(id=LETTERS[1:25], val1=rnorm(25), val2=rnorm(25))
+# add some missing data
 df[sample(seq_len(nrow(df)), ceiling(nrow(df)*0.1)), 2] <- NA
 df.dist <- gendistance(df, idcol=1, ndiscard=2)
+# up-weight the second column
+df.weighted <- gendistance(df, idcol=1, weights=c(1,2,1), ndiscard=2, missing.weight=0.25)
+df[,3] <- df[,2]*2
+df.sing.solve <- gendistance(df, idcol=1, ndiscard=2)
+df.sing.ginv <- gendistance(df, idcol=1, ndiscard=2, singular.method="ginv")
 }
