@@ -62,10 +62,10 @@ C     *								     *
 C ** *****************************************************************
 C
 C - - -	- - - -	- - - -	- - - -	- - - -	- - - -	- - - -	- - - -	- - -
-      INTEGER	 BASIS(1),MEM(1),KA(1),KB(1),ZFW,TOP,NMATCH(1)
-      INTEGER	 CC(1),SM(1),TMA(1),TMB(1),INDEX(1)
-      INTEGER  NBL(1)
-      DOUBLE PRECISION Y1(1),Y2(1),DMINUS(1),DPLUS(1),C0,D,DBEST,Y1B,
+      INTEGER	 BASIS(N),MEM(N),KA(N),KB(N),ZFW,TOP,NMATCH(N)
+      INTEGER	 CC(2*M),SM(N),TMA(N),TMB(N),INDEX(N+1)
+      INTEGER  NBL(2*M)
+      DOUBLE PRECISION Y1(N),Y2(N),DMINUS(N),DPLUS(N),C0,D,DBEST,Y1B,
      *		       Y2B,YB,DFLOAT
 C - - -	- - - -	- - - -	- - - -	- - - -	- - - -	- - - -	- - - -	- - -
 C *** START
@@ -204,11 +204,11 @@ C
       SUBROUTINE AUGMNT(N,TOP,NMATCH,CC,BASIS,MEM,KA,KB,SM,TMA,TMB,
      F		      Y1,Y2,DPLUS,DMINUS,SUP,EPS,NBL,INDEX,DBEST,N1,N2,
      F		      NKA,NKB,NCARD,JRET1)
-      INTEGER	 BASIS(1),MEM(1),KA(1),KB(1),ZFW
-      INTEGER	 CC(1),SM(1),TMA(1),TMB(1),INDEX(1)
-      INTEGER	 TOP,NMATCH(1)
-      INTEGER  NBL(1)
-      DOUBLE PRECISION Y1(1),Y2(1),DMINUS(1),DPLUS(1),C0,D,DBEST,Y1B,
+      INTEGER	 BASIS(N),MEM(N),KA(N),KB(N),ZFW
+      INTEGER	 CC(N*(N-1)),SM(N),TMA(N),TMB(N),INDEX(N+1)
+      INTEGER	 TOP,NMATCH(N)
+      INTEGER  NBL(N*(N-1))
+      DOUBLE PRECISION Y1(N),Y2(N),DMINUS(N),DPLUS(N),C0,D,DBEST,Y1B,
      *		       Y2B,YB,DFLOAT
 C - - -	- - - -	- - - -	- - - -	- - - -	- - - -	- - - -	- - - -	- - -
 C *** AUGMENTATION OF THE MATCHING
@@ -263,11 +263,11 @@ C
       END
       SUBROUTINE EXPAND(N,M,TOP,NMATCH,CC,BASIS,MEM,KA,KB,SM,TMA,TMB,Y1,
      F			Y2,DPLUS,DMINUS,SUP,EPS,NBL,INDEX,NBEST,DBEST)
-      INTEGER	 BASIS(1),MEM(1),KA(1),KB(1),ZFW
-      INTEGER	 CC(1),SM(1),TMA(1),TMB(1),INDEX(1)
-      INTEGER	 TOP,NMATCH(1)
-      INTEGER  NBL(1)
-      DOUBLE PRECISION Y1(1),Y2(1),DMINUS(1),DPLUS(1),C0,D,DBEST,Y1B,
+      INTEGER	 BASIS(N),MEM(N),KA(N),KB(N),ZFW
+      INTEGER	 CC(N*(N-1)),SM(N),TMA(N),TMB(N),INDEX(N+1)
+      INTEGER	 TOP,NMATCH(N)
+      INTEGER  NBL(N*(N-1))
+      DOUBLE PRECISION Y1(N),Y2(N),DMINUS(N),DPLUS(N),C0,D,DBEST,Y1B,
      *		       Y2B,YB,DFLOAT
 C - - -	- - - -	- - - -	- - - -	- - - -	- - - -	- - - -	- - - -	- - -
 C *** EXPANSION	OF A T-LABELED BLOSSOM
@@ -388,11 +388,11 @@ C
       SUBROUTINE GROW (N,TOP,NMATCH,CC,BASIS,MEM,KA,KB,SM,TMA,TMB,Y1,
      F		      Y2,DPLUS,DMINUS,SUP,EPS,NBL,INDEX,NBEST,DBEST)
 C
-      INTEGER	 BASIS(1),MEM(1),KA(1),KB(1),ZFW
-      INTEGER	 CC(1),SM(1),TMA(1),TMB(1),INDEX(1)
-      INTEGER	 TOP,NMATCH(1)
-      INTEGER  NBL(1)
-      DOUBLE PRECISION Y1(1),Y2(1),DMINUS(1),DPLUS(1),DBEST,DFLOAT
+      INTEGER	 BASIS(N),MEM(N),KA(N),KB(N),ZFW
+      INTEGER	 CC(N*(N-1)),SM(N),TMA(N),TMB(N),INDEX(N+1)
+      INTEGER	 TOP,NMATCH(N)
+      INTEGER  NBL(N*(N-1))
+      DOUBLE PRECISION Y1(N),Y2(N),DMINUS(N),DPLUS(N),DBEST,DFLOAT
 C - - -	- - - -	- - - -	- - - -	- - - -	- - - -	- - - -	- - - -	- - -
 C *** GROWING AN ALTERNATING TREE BY ADDING TWO	EDGES
 C
@@ -409,10 +409,10 @@ C
       SUBROUTINE OGRAPH(N,ZFW,EPS,INDEX,NBL,CC,SM,TMA,TMB,NMATCH,MEM,
      1			BASIS,KA,KB,DPLUS,DMINUS,Y1,Y2)
 C - - -	- - - -	- - - -	- - - -	- - - -	- - - -	- - - -	- - - -	- - -
-      INTEGER	 INDEX(1),CC(1),SM(1),TMA(1),TMB(1),N,ZFW,
-     F		 NMATCH(1),MEM(1),BASIS(1),KA(1),KB(1)
-      INTEGER  NBL(1)
-      DOUBLE PRECISION DPLUS(1),DMINUS(1),Y1(1),Y2(1),C0,D,DBEST,YB,
+      INTEGER	 INDEX(N+1),CC(N*(N-1)),SM(N),TMA(N),TMB(N),N,ZFW,
+     F		 NMATCH(N),MEM(N),BASIS(N),KA(N),KB(N)
+      INTEGER  NBL(N*(N-1))
+      DOUBLE PRECISION DPLUS(N),DMINUS(N),Y1(N),Y2(N),C0,D,DBEST,YB,
      F		       Y1B,DFLOAT
 C - - -	- - - -	- - - -	- - - -	- - - -	- - - -	- - - -	- - - -	- - -
 C *** GENERATION OF THE	ORIGINAL GRAPH BY EXPANSION OF ALL
@@ -533,9 +533,9 @@ C
      *			Y1,Y2,DPLUS,DMINUS,NBL,INDEX)
       INTEGER	 N,TOP
       INTEGER	 BASIS(N),MEM(N),KA(N),KB(N)
-      INTEGER	 CC(1),SM(1),TMA(1),TMB(1),INDEX(1)
-      INTEGER  NBL(1)
-      DOUBLE PRECISION	   Y1(1),Y2(1),DPLUS(1),DMINUS(1),D1,D2,C0,
+      INTEGER	 CC(N*(N-1)),SM(N),TMA(N),TMB(N),INDEX(N+1)
+      INTEGER  NBL(N*(N-1))
+      DOUBLE PRECISION	   Y1(N),Y2(N),DPLUS(N),DMINUS(N),D1,D2,C0,
      F			   DFLOAT
 C
 C - - -	- - - -	- - - -	- - - -	- - - -	- - - -	- - - -	- - - -	- - -
@@ -586,9 +586,9 @@ C
      *			Y1,Y2,DPLUS,DMINUS,NBL,INDEX)
       INTEGER	 N,TOP
       INTEGER	 BASIS(N),MEM(N),KA(N),KB(N)
-      INTEGER	 CC(1),SM(1),TMA(1),TMB(1),INDEX(1)
-      INTEGER  NBL(1)
-      DOUBLE PRECISION	   Y1(1),Y2(1),DMINUS(1),DPLUS(1),D,C0,Y1B,
+      INTEGER	 CC(N*(N-1)),SM(N),TMA(N),TMB(N),INDEX(N+1)
+      INTEGER  NBL(N*(N-1))
+      DOUBLE PRECISION	   Y1(N),Y2(N),DMINUS(N),DPLUS(N),D,C0,Y1B,
      F			   Y2B,DFLOAT
 C
 C - - -	- - - -	- - - -	- - - -	- - - -	- - - -	- - - -	- - - -	- - -
@@ -631,11 +631,11 @@ C
       SUBROUTINE SHRINK	(N,TOP,NMATCH,CC,BASIS,MEM,KA,KB,SM,TMA,TMB,
      F		      Y1,Y2,DPLUS,DMINUS,SUP,EPS,NBL,INDEX,NBEST,DBEST,
      F		      NB,N1,N2,NB2,NKA,NKB)
-      INTEGER	 BASIS(1),MEM(1),KA(1),KB(1),ZFW
-      INTEGER	 CC(1),SM(1),TMA(1),TMB(1),INDEX(1)
-      INTEGER	 TOP,NMATCH(1)
-      INTEGER  NBL(1)
-      DOUBLE PRECISION Y1(1),Y2(1),DMINUS(1),DPLUS(1),D,DBEST,Y1B,Y2B,
+      INTEGER	 BASIS(N),MEM(N),KA(N),KB(N),ZFW
+      INTEGER	 CC(N*(N-1)),SM(N),TMA(N),TMB(N),INDEX(N+1)
+      INTEGER	 TOP,NMATCH(N)
+      INTEGER  NBL(N*(N-1))
+      DOUBLE PRECISION Y1(N),Y2(N),DMINUS(N),DPLUS(N),D,DBEST,Y1B,Y2B,
      F		       YB,DFLOAT
 C - - -	- - - -	- - - -	- - - -	- - - -	- - - -	- - - -	- - - -	- - -
 C *** SHRINKING	A BLOSSOM
@@ -752,9 +752,9 @@ C     *								     *
 C *** ****************************************************************
 C
 C - - -	- - - -	- - - -	- - - -	- - - -	- - - -	- - - -	- - - -	- - -
-      INTEGER	 CE(1),CQ,INDEX(1),NMATCH(1),TOP
-      INTEGER  NB(1)
-      DOUBLE PRECISION	   D,DD,Y1(1),DFLOAT
+      INTEGER	 CE(N*(N-1)),CQ,INDEX(N+1),NMATCH(N),TOP
+      INTEGER  NB(N*(N-1))
+      DOUBLE PRECISION	   D,DD,Y1(N),DFLOAT
       DO  10  I=1,N
    10 NMATCH(I)=TOP
       JJCE=INDEX(1)
