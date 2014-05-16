@@ -1,5 +1,48 @@
-# run quality of match diagnostics
-# return data.frame with QoM information
+#'Quality of Match
+#'
+#'Quality of matches show how well matched pairs differ.  For each variable the
+#'average distance is generated.  Each item in a pair is assigned a group and
+#'after several iterations the quantile of these average distances is returned.
+#'
+#'This fuction is useful for determining the effectiveness of your weights
+#'(when generating a distance matrix).  Weighting a variable more will lower
+#'the average distance, but it could penalize the distance of the other
+#'variables. Calculating the standard error requires calling
+#'\code{\link{hdquantile}} from \pkg{Hmisc}.  The quantiles may be slighly
+#'different when using \code{\link{hdquantile}}.
+#'
+#'@aliases qom qom,data.frame-method
+#'@param covariate A data.frame object.
+#'@param matches A data.frame object.  Contains information on how to match the
+#'covariate data set.
+#'@param iterations An integer.  Number of iterations to run, defaults to
+#'10,000.
+#'@param probs A numeric vector.  Probabilities to pass to the quantile
+#'function.
+#'@param use.se A logical value.  Determines if the standard error should be
+#'computed.  Default value of FALSE.
+#'@param all.vals A logical value.  Determines if false matches should be
+#'included in comparison.  Default value of FALSE.
+#'@param seed Seed provided for random-number generation.  Default value of
+#'101.
+#'@param \dots Additional arguments, not used at the moment.
+#'@return a list object containing elements with quality of match information
+#'
+#'  \item{q}{data.frame with quantiles for each covariate}
+#'
+#'  \item{se}{data.frame with standard error for each covariate}
+#'
+#'  \item{sd}{vector with standard deviate for each covariate}
+#'@exportMethod qom
+#'@author Cole Beck
+#'@examples
+#'
+#'df <- data.frame(id=LETTERS[1:25], val1=rnorm(25), val2=rnorm(25))
+#'df.dist <- gendistance(df, idcol=1)
+#'df.mdm <- distancematrix(df.dist)
+#'df.match <- nonbimatch(df.mdm)
+#'qom(df.dist$cov, df.match$matches)
+#'
 
 setGeneric("qom", function(covariate, matches, iterations=10000, probs=NA, use.se=FALSE, all.vals=FALSE, seed=101, ...) standardGeneric("qom"))
 setMethod("qom", "data.frame", function(covariate, matches, iterations=10000, probs=NA, use.se=FALSE, all.vals=FALSE, seed=101, ...) {
@@ -15,6 +58,13 @@ setMethod("qom", "data.frame", function(covariate, matches, iterations=10000, pr
     }
     if(!all(sapply(matches[,c(2,4)], is.numeric))) {
         stop("matches must contain numeric values in columns two and four")
+    }
+    # digits can be specified for rounding
+    xarg <- list(...)
+    if('digits' %in% names(xarg)) {
+      digits <- xarg$digits
+    } else {
+      digits <- 4
     }
     pairs <- matches[matches[,2] < matches[,4], c(2,4)]
     if(all.vals != TRUE) {
@@ -85,23 +135,25 @@ setMethod("qom", "data.frame", function(covariate, matches, iterations=10000, pr
             pairdiff.sums.mat <- abs(group.one - group.two)
         }
         if(use.se == TRUE) {
-            se.parts <- round(t(apply(pairdiff.sums.mat, MARGIN=2, FUN=function(x) { tmp<-hdquantile(x, probs=probs, se=TRUE); c(tmp, attr(tmp, "se")) })), 4)
+            se.parts <- t(apply(pairdiff.sums.mat, MARGIN=2, FUN=function(x) { tmp<-hdquantile(x, probs=probs, se=TRUE); c(tmp, attr(tmp, "se")) }))
             pairsumm <- se.parts[,seq_along(probs)]
-            pair.se <- se.parts[,seq(length(probs)+1, length.out=length(probs))]
+            pair.se <- round(se.parts[,seq(length(probs)+1, length.out=length(probs))], digits)
             # change the format of the colnames to be like "quantile"
             cnames <- sprintf("%.0f%%", as.numeric(colnames(pairsumm))*100)
             colnames(pairsumm) <- cnames
             colnames(pair.se) <- cnames
         } else {
             # it's cheap to add probs=0; do so and remove first row to ensure matrix result
-            pairsumm <- round(t(apply(pairdiff.sums.mat, MARGIN=2, quantile, probs=c(0,probs))), 4)[,-1, drop=FALSE]
+            pairsumm <- t(apply(pairdiff.sums.mat, MARGIN=2, quantile, probs=c(0,probs)))[,-1, drop=FALSE]
         }
         if(!is.null(worst)) {
             pairsumm <- cbind(pairsumm, worst)
         }
+        pair.sd <- round(apply(pairdiff.sums.mat, MARGIN=2, sd, na.rm=TRUE), digits)
     } else {
         # only return the 100th percentile
         pairsumm <- worst
     }
-    list(q=pairsumm, se=pair.se)
+    pairsumm <- round(pairsumm, digits)
+    list(q=pairsumm, se=pair.se, sd=pair.sd)
 })

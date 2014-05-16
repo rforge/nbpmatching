@@ -1,5 +1,40 @@
-# distance matrix method - nonbimatch
-# returns a list of matched pairs
+#'Nonbipartite Matching
+#'
+#'The nonbinmatch function creates the set of pairwise matches that minimizes
+#'the sum of distances between the pairs.
+#'
+#'The nonbinmatch function calls the Fortran code (Derigs) and set of pairwise
+#'matches that minimizes the sum of distances between the pairs.
+#'
+#'@aliases nonbimatch nonbimatch,distancematrix-method
+#'@param mdm A distancematrix object.  See the distancematrix function.
+#'@param threshold An integer value, indicating the distance needed to create
+#'chameleon matches.
+#'@param precision The largest value in the matrix will have at most this many
+#'digits.  The default value is six.
+#'@param \dots Additional arguments, these are not used.
+#'@return
+#'
+#'  \item{matches}{description data.frame containing matches}
+#'
+#'  \item{halves}{description data.frame containing each match}
+#'
+#'  \item{total}{description sum of the distances across all pairs}
+#'
+#'  \item{mean}{description mean distance for each pair}
+#'@exportMethod nonbimatch
+#'@author Cole Beck
+#'@seealso \code{\link{distancematrix}}
+#'@examples
+#'
+#'plainmatrix<-as.matrix(dist(sample(1:25, 8, replace=TRUE)))
+#'diag(plainmatrix) <- 99999  # setting diagonal to an infinite distance for
+#'                            # pedagogical reasons (the diagonal may be left
+#'                            # as zero)
+#'mdm<-distancematrix(plainmatrix)
+#'res<-nonbimatch(mdm)
+#'
+
 setGeneric("nonbimatch", function(mdm, threshold=NA, precision=6, ...) standardGeneric("nonbimatch"))
 setMethod("nonbimatch", "distancematrix", function(mdm, threshold=NA, precision, ...) {
     if(any(is.na(as.integer(mdm)))) {
