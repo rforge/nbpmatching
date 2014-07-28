@@ -50,14 +50,15 @@ setMethod("nonbimatch", "distancematrix", function(mdm, threshold=NA, precision,
     ids <- rownames(mdm)
     if(!is.na(threshold) && threshold >= 0) {
         # extend the distance matrix for chameleons
-        mdm2 <- data.frame(matrix(threshold, nrow=n*2, ncol=n*2))
-        mdm2[seq_len(n), seq_len(n)] <- mdm
-        mdm <- mdm2
-        rm(mdm2)
+        newvals <- rep(threshold, n)
+        # add columns
+        mdm <- do.call("cbind", c(list(mdm), newvals))
+        # add rows
+        mdm <- do.call("rbind", c(list(mdm), newvals))
         n <- n*2
     } else threshold <- NA
 
-    wt <- as.vector(t(mdm))
+    wt <- c(mdm)
     nmatch <- seq.int(n)
     numdigits <- floor(log10(max(wt))) + 1
     if(!is.numeric(precision) || precision < 1) {
@@ -91,13 +92,8 @@ setMethod("nonbimatch", "distancematrix", function(mdm, threshold=NA, precision,
         }
     }
 
-    result <- data.frame(match)
-    matches <- data.frame("Group1.ID"=NA, "Group1.Row"=numeric(n), "Group2.ID"=NA, "Group2.Row"=numeric(n), "Distance"=numeric(n))
-
-    for(i in seq.int(n)) {
-        matches[i,c(1,3)] <- c(ids[i], ids[result[i, 'match']])
-        matches[i,c(2,4,5)] <- c(i, result[i, 'match'], mdm[i, result[i,1]])
-    }
+    i <- seq.int(n)
+    matches <- data.frame("Group1.ID"=ids, "Group1.Row"=i, "Group2.ID"=ids[match], "Group2.Row"=match, "Distance"=mdm[cbind(i, match)])
     halves <- matches[matches[,2] < matches[,4],]
     distance <- sum(matches[,5])
     total <- distance/2
