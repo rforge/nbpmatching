@@ -8,6 +8,7 @@
 #'@aliases quantile quantile,distancematrix-method
 #'@param x A distancematrix object.
 #'@param probs numeric vector or probabilities with values in [0,1].
+#'@param \dots Additional arguments, passed to \code{\link[stats]{quantile}}.
 #'@return numeric vector of quantiles corresponding to the given probabilities
 #'@export
 #'@rdname quantile

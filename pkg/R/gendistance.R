@@ -11,18 +11,19 @@
 #'@aliases gendistance gendistance,data.frame-method
 #'@param covariate A data.frame object, containing the covariates of the data
 #'set.
-#'@param idcol An integer, providing the index of the column containing row
-#'ID's.
+#'@param idcol An integer or column name, providing the index of the column
+#'containing row ID's.
 #'@param weights A numeric vector, the length should match the number of
 #'columns.  This value determines how much weight is given to each column when
 #'generating the distance matrix.
-#'@param prevent An integer vector, providing the index of columns that should
-#'be used to prevent matches.  When generating the distance matrix, elements
-#'that match on these columns are given a maximum distance.
-#'@param force An integer, providing the index of the column containing information
-#'used to force pairs to match.
-#'@param rankcols An integer vector, providing the index of columns that should
-#'have the rank function applied to them before generating the distance matrix.
+#'@param prevent A vector of integers or column names, providing the index of
+#'columns that should be used to prevent matches.  When generating the distance
+#'matrix, elements that match on these columns are given a maximum distance.
+#'@param force An integer or column name, providing the index of the column
+#'containing information used to force pairs to match.
+#'@param rankcols A vector of integers or column names, providing the index of
+#'columns that should have the rank function applied to them before generating
+#'the distance matrix.
 #'@param missing.weight A numeric value, or vector, used to generate the weight
 #'of missingness indicator columns.  Missingness indicator columns are created
 #'if there is missing data within the data set.  Defaults to 0.1.  If a single
@@ -83,6 +84,7 @@ setGeneric("gendistance", function(covariate, idcol=NULL, weights=NULL, prevent=
 setMethod("gendistance", "data.frame", function(covariate, idcol=NULL, weights=NULL, prevent=NULL, force=NULL, rankcols=NULL, missing.weight=0.1, ndiscard=0, singular.method='solve', talisman=NULL, prevent.res.match=NULL, ...) {
     nr <- nrow(covariate)
     nc <- ncol(covariate)
+    stopifnot(nr > 0)
     myrownames <- seq_len(nr)
     mycolnames <- names(covariate)
     mateIDs <- integer(0)
@@ -98,10 +100,14 @@ setMethod("gendistance", "data.frame", function(covariate, idcol=NULL, weights=N
     # if all values in a column are the same, mark as bad column
     badcol <- union(badcol, which(sapply(1:nc, FUN=function(x) length(unique(covariate[,x])) == 1L)))
 
-    if(length(idcol) == 1L && is.numeric(idcol) && idcol > 0 && idcol <= nc) {
-        myrownames <- as.character(covariate[,idcol])
-        row.names(covariate) <- myrownames
-        badcol <- union(badcol, idcol)
+    if(!is.null(idcol) && length(idcol) == 1L) {
+        if(is.character(idcol)) idcol <- match(idcol, mycolnames)
+        idcol <- as.integer(idcol)
+        if(!is.na(idcol) && idcol > 0 && idcol <= nc) {
+            myrownames <- as.character(covariate[,idcol])
+            row.names(covariate) <- myrownames
+            badcol <- union(badcol, idcol)
+        }
     }
 
     if(is.null(weights)) {
@@ -114,6 +120,7 @@ setMethod("gendistance", "data.frame", function(covariate, idcol=NULL, weights=N
     if(all(weights == 0)) stop("At least one column weight must be non-zero")
 
     if(!is.null(prevent)) {
+        if(is.character(prevent)) prevent <- match(prevent, mycolnames)
         prevent <- as.integer(prevent)
         # in the past, prevent was ignored if found in badcol
         # but it could make sense to prevent unequal character strings
@@ -150,6 +157,7 @@ setMethod("gendistance", "data.frame", function(covariate, idcol=NULL, weights=N
     }
 
     if(!is.null(force)) {
+        if(is.character(force)) force <- match(force, mycolnames)
         force <- as.integer(force)
         force <- setdiff(na.omit(ifelse(force < 1 | force > nc, NA, force)), badcol)
         # while this could adapt to a vector of columns, only accept one column
@@ -173,6 +181,7 @@ setMethod("gendistance", "data.frame", function(covariate, idcol=NULL, weights=N
     }
     # validate rankcols
     if(!is.null(rankcols)) {
+        if(is.character(rankcols)) rankcols <- match(rankcols, mycolnames)
         rankcols <- as.integer(rankcols)
         rankcols <- setdiff(na.omit(ifelse(rankcols < 1 | rankcols > nc, NA, rankcols)), badcol)
         # bad columns have been removed, so if there are any rank columns, their column index has changed
@@ -210,6 +219,7 @@ setMethod("gendistance", "data.frame", function(covariate, idcol=NULL, weights=N
 
     # Define your matrix of covariates covariate
     X <- as.matrix(covariate)
+    if(nrow(X) < 2) stop('covariates data.frame must have at least two rows')
     if(length(rankcols) >= 1L) {
         for(i in rankcols) {
             X[,i] <- rank(covariate[,i])
@@ -278,7 +288,8 @@ setMethod("gendistance", "data.frame", function(covariate, idcol=NULL, weights=N
         for(i in seq_along(mateIDs)) {
             j <- mateIDs[i]
             if(!is.na(j)) {
-                mdists[i,] <- mdists[,i] <- ifelse(seq_along(mdists[i,]) == j, 0, maxval)
+                mdists[i,] <- mdists[,i] <- maxval
+                mdists[i,j] <- mdists[j,i] <- 0
             }
         }
     }
