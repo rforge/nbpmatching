@@ -8,8 +8,7 @@ cov <- data.frame(
   cars = c(1,3,2,1,7,4,1,3,2,0),
   accidents = c(1,0,2,2,4,2,0,0,2,2),
   nophantom = c(1,1,1,1,0,0,0,0,0,0),
-  Group2.Row = c(NA,NA,NA,NA,NA,NA,NA,NA,10,9),
-  stringsAsFactors=FALSE
+  Group2.Row = c(NA,NA,NA,NA,NA,NA,NA,NA,10,9)
 )
 
 maxval <- 2*10^8

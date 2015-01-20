@@ -44,8 +44,10 @@
 #'qom(df.dist$cov, df.match$matches)
 #'
 
-setGeneric("qom", function(covariate, matches, iterations=10000, probs=NA, use.se=FALSE, all.vals=FALSE, seed=101, ...) standardGeneric("qom"))
-setMethod("qom", "data.frame", function(covariate, matches, iterations=10000, probs=NA, use.se=FALSE, all.vals=FALSE, seed=101, ...) {
+setGeneric("qom", function(covariate, matches, iterations=10000, probs=NA,
+           use.se=FALSE, all.vals=FALSE, seed=101, ...) standardGeneric("qom"))
+setMethod("qom", "data.frame", function(covariate, matches, iterations=10000,
+          probs=NA, use.se=FALSE, all.vals=FALSE, seed=101, ...) {
     if(exists(".Random.seed", envir = .GlobalEnv)) {
         save.seed <- get(".Random.seed", envir= .GlobalEnv)
         on.exit(assign(".Random.seed", save.seed, envir = .GlobalEnv))

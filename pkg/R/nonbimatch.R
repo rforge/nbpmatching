@@ -41,11 +41,14 @@ setMethod("nonbimatch", "distancematrix", function(mdm, threshold=NA, precision,
         stop("Elements of a distance matrix must be integers")
     }
     n <- nrow(mdm)
+    if(n == 0) {
+        stop("distance matrix has no rows")
+    }
     if(n%%2 == 1) {
         stop("There must be an even number of elements")
     }
     if(is.null(rownames(mdm))) {
-        rownames(mdm) <- seq.int(n)
+        rownames(mdm) <- seq_len(n)
     }
     ids <- rownames(mdm)
     if(!is.na(threshold) && threshold >= 0) {
@@ -59,7 +62,7 @@ setMethod("nonbimatch", "distancematrix", function(mdm, threshold=NA, precision,
     } else threshold <- NA
 
     wt <- c(mdm)
-    nmatch <- seq.int(n)
+    nmatch <- seq_len(n)
     numdigits <- floor(log10(max(wt))) + 1
     if(!is.numeric(precision) || precision < 1) {
         precision <- 6
@@ -92,7 +95,7 @@ setMethod("nonbimatch", "distancematrix", function(mdm, threshold=NA, precision,
         }
     }
 
-    i <- seq.int(n)
+    i <- seq_len(n)
     matches <- data.frame("Group1.ID"=ids, "Group1.Row"=i, "Group2.ID"=ids[match], "Group2.Row"=match, "Distance"=mdm[cbind(i, match)])
     halves <- matches[matches[,2] < matches[,4],]
     distance <- sum(matches[,5])
@@ -124,14 +127,9 @@ setMethod("runner", "data.frame", function(covariate, seed=101, ..., mate.random
             result[mates[2]] <- mates[1]
             options <- options[-match(mates, options)]
         }
-        result <- data.frame(match=result)
-
+        i <- seq_len(n)
         ids <- rownames(step2)
-        matches <- data.frame("Group1.ID"=NA, "Group1.Row"=numeric(n), "Group2.ID"=NA, "Group2.Row"=numeric(n), "Distance"=numeric(n))
-        for(i in seq.int(n)) {
-            matches[i,c(1,3)] <- c(ids[i], ids[result[i, 'match']])
-            matches[i,c(2,4,5)] <- c(i, result[i, 'match'], step2[i, result[i,1]])
-        }
+        matches <- data.frame("Group1.ID"=ids, "Group1.Row"=i, "Group2.ID"=ids[result], "Group2.Row"=result, "Distance"=step2[i,result])
         halves <- matches[matches[,2] < matches[,4],]
         distance <- sum(matches[,5])
         total <- distance/2

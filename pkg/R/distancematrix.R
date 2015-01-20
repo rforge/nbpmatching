@@ -67,6 +67,9 @@ setMethod("initialize", "distancematrix", function(.Object, ...) {
     .Object<-callNextMethod()
     nr<-nrow(.Object)
     nc<-ncol(.Object)
+    if(nr == 0 || nc == 0) {
+        stop("Row and column lengths must exceed zero")
+    }
     if(abs(nr-nc) > 1)
         stop("Row and column lengths must be equal")
     if(nr != nc) {

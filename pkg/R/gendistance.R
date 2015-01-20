@@ -80,8 +80,14 @@
 #'df.sing.ginv <- gendistance(df, idcol=1, ndiscard=2, singular.method="ginv")
 #'
 
-setGeneric("gendistance", function(covariate, idcol=NULL, weights=NULL, prevent=NULL, force=NULL, rankcols=NULL, missing.weight=0.1, ndiscard=0, singular.method='solve', talisman=NULL, prevent.res.match=NULL, ...) standardGeneric("gendistance"))
-setMethod("gendistance", "data.frame", function(covariate, idcol=NULL, weights=NULL, prevent=NULL, force=NULL, rankcols=NULL, missing.weight=0.1, ndiscard=0, singular.method='solve', talisman=NULL, prevent.res.match=NULL, ...) {
+setGeneric("gendistance", function(covariate, idcol=NULL, weights=NULL,
+           prevent=NULL, force=NULL, rankcols=NULL, missing.weight=0.1,
+           ndiscard=0, singular.method='solve', talisman=NULL,
+           prevent.res.match=NULL, ...) standardGeneric("gendistance"))
+setMethod("gendistance", "data.frame", function(covariate, idcol=NULL,
+          weights=NULL, prevent=NULL, force=NULL, rankcols=NULL,
+          missing.weight=0.1, ndiscard=0, singular.method='solve',
+          talisman=NULL, prevent.res.match=NULL, ...) {
     nr <- nrow(covariate)
     nc <- ncol(covariate)
     stopifnot(nr > 0)
@@ -90,11 +96,6 @@ setMethod("gendistance", "data.frame", function(covariate, idcol=NULL, weights=N
     mateIDs <- integer(0)
     bad.data <- NULL
 
-    # warning for factor variables
-    factorcols <- which(sapply(covariate, is.factor))
-    if(length(factorcols)) {
-      warning(sprintf("consider converting factor variables [%s] before calling gendistance", paste(mycolnames[factorcols], collapse=', ')))
-    }
     # columns that aren't numeric should be marked bad
     badcol <- which(sapply(1:nc, FUN=function(x) suppressWarnings(!is.numeric(covariate[,x]))))
     # if all values in a column are the same, mark as bad column
@@ -108,6 +109,12 @@ setMethod("gendistance", "data.frame", function(covariate, idcol=NULL, weights=N
             row.names(covariate) <- myrownames
             badcol <- union(badcol, idcol)
         }
+    }
+
+    # warning for factor variables
+    factorcols <- setdiff(which(sapply(covariate, is.factor)), idcol)
+    if(length(factorcols)) {
+      warning(sprintf("consider converting factor variables [%s] before calling gendistance", paste(mycolnames[factorcols], collapse=', ')))
     }
 
     if(is.null(weights)) {
@@ -220,6 +227,7 @@ setMethod("gendistance", "data.frame", function(covariate, idcol=NULL, weights=N
     # Define your matrix of covariates covariate
     X <- as.matrix(covariate)
     if(nrow(X) < 2) stop('covariates data.frame must have at least two rows')
+    if(ncol(X) < 1) stop('covariates data.frame must have at least one column')
     if(length(rankcols) >= 1L) {
         for(i in rankcols) {
             X[,i] <- rank(covariate[,i])

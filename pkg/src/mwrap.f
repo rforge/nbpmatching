@@ -4,7 +4,7 @@
       INTEGER KB(N),ZFW,NMATCH(N),CC(N*(N-1))
       INTEGER SM(N),TMA(N),TMB(N),INDEX(N+1)
       INTEGER NBL(N*(N-1)), WT(N*N)
-      INTEGER M1,NN,X,Y,N,M,I
+      INTEGER M1,NN,X,Y,N,M
       DOUBLE PRECISION  Y1(N),Y2(N),DMINUS(N),DPLUS(N)
 
       M=N*(N-1)/2

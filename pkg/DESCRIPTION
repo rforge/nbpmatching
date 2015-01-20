@@ -1,14 +1,14 @@
 Package: nbpMatching
 Type: Package
 Title: Functions for Optimal Non-bipartite Matching
-Version: 1.4.3
-Date: 2014-12-19
+Version: 1.4.4
+Date: 2015-01-19
 Author: Cole Beck [aut, cre], Bo Lu [aut], Robert Greevy [aut]
 Maintainer: Cole Beck <cole.beck@vanderbilt.edu>
 Authors@R: c(person("Cole", "Beck", role = c("aut", "cre"),
-                     email = "cole.beck@vanderbilt.edu"),
-              person("Bo", "Lu", role = "aut"),
-              person("Robert", "Greevy", role = "aut"))
+    email = "cole.beck@vanderbilt.edu"),
+    person("Bo", "Lu", role = "aut"),
+    person("Robert", "Greevy", role = "aut"))
 Description: This package provides functions for performing nonbipartite
     matching and matched randomization. A "bipartite" matching utilizes two
     separate groups, e.g. smokers being matched to nonsmokers or cases being
