@@ -9,14 +9,14 @@ Authors@R: c(person("Cole", "Beck", role = c("aut", "cre"),
     email = "cole.beck@vanderbilt.edu"),
     person("Bo", "Lu", role = "aut"),
     person("Robert", "Greevy", role = "aut"))
-Description: Perform nonbipartite matching and matched randomization. A
+Description: Perform non-bipartite matching and matched randomization. A
     "bipartite" matching utilizes two separate groups, e.g. smokers being
-    matched to nonsmokers or cases being matched to controls. A "nonbipartite"
+    matched to nonsmokers or cases being matched to controls. A "non-bipartite"
     matching creates mates from one big group, e.g. 100 hospitals being
     randomized for a two-arm cluster randomized trial or 5000 children who
     have been exposed to various levels of secondhand smoke and are being
     paired to form a greater exposure vs. lesser exposure comparison. At the
-    core of a nonbipartite matching is a NxN distance matrix for N potential
+    core of a non-bipartite matching is a N x N distance matrix for N potential
     mates. The distance between two units expresses a measure of similarity or
     quality as mates (the lower the better). The 'gendistance()' and
     'distancematrix()' functions assist in creating this. The 'nonbimatch()'
