@@ -1,12 +1,19 @@
 #'Generate a Distance Matrix
 #'
-#'The gendistance function creates a distance matrix from a covariates matrix.
+#'The gendistance function creates an \eqn{(N+K)}x\eqn{(N+K)} distance matrix
+#'from an \eqn{N}x\eqn{P} covariates matrix, where \eqn{N} is the number
+#'of subjects, \eqn{P} the number of covariates, and \eqn{K} the number of
+#'phantom subjects requested (see \code{ndiscard} option). Provided the
+#'covariates' covariance matrix is invertible, the distances computed are
+#'Mahalanobis distances, or if covariate weights are provided, Reweighted
+#'Mahalanobis distances (see \code{weights} option and Greevy, et al.,
+#'Pharmacoepidemiology and Drug Safety 2012).
 #'
 #'Given a data.frame of covariates, generate a distance matrix.  Missing values
-#'are imputed with fill.missing.  For each column with missing data, a
-#'missingness indicator column will be added.  Phantoms are fake elements that
-#'perfectly match all elements.  They can be used to discard a certain number
-#'of elements.
+#'are imputed with \code{\link{fill.missing}}.  For each column with missing
+#'data, a missingness indicator column will be added.  Phantoms are fake
+#'elements that perfectly match all elements.  They can be used to discard a
+#'certain number of elements.
 #'
 #'@aliases gendistance gendistance,data.frame-method
 #'@param covariate A data.frame object, containing the covariates of the data
@@ -266,12 +273,7 @@ setMethod("gendistance", "data.frame", function(covariate, idcol=NULL,
     # take the square root
     mdists <- sqrt(mdists)
 
-    # pick a big value for points that shouldn't match - like the diagonal
-    numdigits<-floor(log10(max(mdists))) + 1
-    shift<-10^(8-numdigits)
-    maxval<-2*10^8
-    mdists<-floor(mdists*shift)
-    diag(mdists) <- maxval
+    maxval <- Inf
     # add back row names
     dimnames(mdists) <- list(myrownames, myrownames)
 
@@ -306,13 +308,14 @@ setMethod("gendistance", "data.frame", function(covariate, idcol=NULL,
     GROUPS <- 2
     nphantoms <- ndiscard + ((GROUPS - (nr - ndiscard) %% GROUPS) %% GROUPS)
     if(nphantoms > 0L) {
-        mdists <- make.phantoms(mdists, nphantoms)
+        mdists <- make.phantoms(mdists, nphantoms, maxval=maxval)
         # failed talisman receive max distance
         if(length(tal.fail)) {
             pcols <- seq(nr + 1, nr + nphantoms)
             mdists[tal.fail, pcols] <- mdists[pcols, tal.fail] <- maxval
         }
     }
+    diag(mdists) <- maxval
     # convert matrix to data frame
     mdists <- as.data.frame(mdists)
 

@@ -80,14 +80,21 @@ a list object with several elements
  \item{ndiscard}{number of elements that will match phantoms}
 }
 \description{
-The gendistance function creates a distance matrix from a covariates matrix.
+The gendistance function creates an \eqn{(N+K)}x\eqn{(N+K)} distance matrix
+from an \eqn{N}x\eqn{P} covariates matrix, where \eqn{N} is the number
+of subjects, \eqn{P} the number of covariates, and \eqn{K} the number of
+phantom subjects requested (see \code{ndiscard} option). Provided the
+covariates' covariance matrix is invertible, the distances computed are
+Mahalanobis distances, or if covariate weights are provided, Reweighted
+Mahalanobis distances (see \code{weights} option and Greevy, et al.,
+Pharmacoepidemiology and Drug Safety 2012).
 }
 \details{
 Given a data.frame of covariates, generate a distance matrix.  Missing values
-are imputed with fill.missing.  For each column with missing data, a
-missingness indicator column will be added.  Phantoms are fake elements that
-perfectly match all elements.  They can be used to discard a certain number
-of elements.
+are imputed with \code{\link{fill.missing}}.  For each column with missing
+data, a missingness indicator column will be added.  Phantoms are fake
+elements that perfectly match all elements.  They can be used to discard a
+certain number of elements.
 }
 \examples{
 set.seed(1)
